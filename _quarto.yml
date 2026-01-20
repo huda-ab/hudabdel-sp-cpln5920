@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 website:
-  title: "Huda Abdelnur - MUSA 5080 Portfolio"
+  title: "Huda Abdelnur - CPLN 5920 Portfolio"
   navbar:
     left:
       - href: index.qmd
