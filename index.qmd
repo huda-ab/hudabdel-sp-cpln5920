@@ -15,7 +15,7 @@ Advanced spatial analysis and data science for urban planning and public policy.
 - **Final Project:** Capstone modeling challenge
 
 ## About Me
-[Students will customize this section]
+[Hi! My name is Huda Abdelnur, and I am a first year Master of City Planning candidate in the Smart Cities concentration. My email address is abdeln10@upenn.edu. My GitHub username is "huda-ab". I am taking this course, as I am interested in edvancing my quantitative skillset.]
 
 ## Contact
 - Email: [your.email@upenn.edu]
