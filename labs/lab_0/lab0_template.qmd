@@ -220,7 +220,7 @@ car_count <- car_data %>%
 # Frequency table for price categories
 car_price_count <- car_data %>%
   group_by(price_category) %>%
-  tally(n= "count")
+  tally(n = "count")
 
 car_price_count
 ```

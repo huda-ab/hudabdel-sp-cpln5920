@@ -242,7 +242,7 @@
     "href": "labs/lab_0/lab0_template.html#categorical-summaries",
     "title": "Lab 0: Getting Started with dplyr",
     "section": "5.2 Categorical Summaries",
-    "text": "5.2 Categorical Summaries\n\n# Frequency table for price categories\ncar_price_count &lt;- car_data %&gt;%\n  group_by(price_category) %&gt;%\n  tally(n= \"count\")\n\ncar_price_count\n\n# A tibble: 3 × 2\n  price_category count\n  &lt;chr&gt;          &lt;int&gt;\n1 budget         34040\n2 luxury          6178\n3 midrange        9782"
+    "text": "5.2 Categorical Summaries\n\n# Frequency table for price categories\ncar_price_count &lt;- car_data %&gt;%\n  group_by(price_category) %&gt;%\n  tally(n = \"count\")\n\ncar_price_count\n\n# A tibble: 3 × 2\n  price_category count\n  &lt;chr&gt;          &lt;int&gt;\n1 budget         34040\n2 luxury          6178\n3 midrange        9782"
   },
   {
     "objectID": "labs/lab_0/lab_setup_instructions.html",
