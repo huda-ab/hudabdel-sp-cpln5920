@@ -12,6 +12,7 @@ website:
         menu:
           - href: labs/lab_0/index.qmd
             text: "Lab 0: dplyr Basics"
+ 
 format:
   html:
     theme: cosmo

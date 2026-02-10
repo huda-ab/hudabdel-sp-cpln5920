@@ -1,0 +1,500 @@
+---
+title: "Lab 1: Census Data Quality for Policy Decisions"
+subtitle: "Evaluating Data Reliability for Algorithmic Decision-Making"
+author: "Huda Abdelnur"
+date: today
+format: 
+  html:
+    code-fold: false
+    toc: true
+    toc-location: left
+    theme: cosmo
+execute:
+  warning: false
+  message: false
+---
+
+# Assignment Overview
+
+## Scenario
+
+You are a data analyst for the **[Your State] Department of Human Services**. The department is considering implementing an algorithmic system to identify communities that should receive priority for social service funding and outreach programs. Your supervisor has asked you to evaluate the quality and reliability of available census data to inform this decision.
+
+Drawing on our Week 2 discussion of algorithmic bias, you need to assess not just what the data shows, but how reliable it is and what communities might be affected by data quality issues.
+
+## Learning Objectives
+
+- Apply dplyr functions to real census data for policy analysis
+- Evaluate data quality using margins of error 
+- Connect technical analysis to algorithmic decision-making
+- Identify potential equity implications of data reliability issues
+- Create professional documentation for policy stakeholders
+
+## Submission Instructions
+
+**Submit by posting your updated portfolio link on Canvas.** Your assignment should be accessible at `your-portfolio-url/labs/lab_1/`
+
+Make sure to update your `_quarto.yml` navigation to include this assignment under an "Labs" menu.
+
+# Part 1: Portfolio Integration
+
+Create this assignment in your portfolio repository under an `labs/lab_1/` folder structure. Update your navigation menu to include:
+
+```
+- text: Assignments
+  menu:
+    - href: labs/lab_1/your_file_name.qmd
+      text: "Lab 1: Census Data Exploration"
+```
+If there is a special character like a colon, you need use double quote mark so that the quarto can identify this as text
+
+# Setup
+
+```{r setup}
+# Load required packages (hint: you need tidycensus, tidyverse, and knitr)
+
+# Set your Census API key
+
+# Choose your state for analysis - assign it to a variable called my_state
+```
+
+**State Selection:** I have chosen **California** for this analysis because: this is the state I was born and raised in, and I am intrigued to perform policy analysis using census data!
+
+# Part 2: County-Level Resource Assessment
+
+## 2.1 Data Retrieval
+
+**Your Task:** Use `get_acs()` to retrieve county-level data for your chosen state.
+
+**Requirements:**
+- Geography: county level
+- Variables: median household income (B19013_001) and total population (B01003_001)  
+- Year: 2022
+- Survey: acs5
+- Output format: wide
+
+**Hint:** Remember to give your variables descriptive names using the `variables = c(name = "code")` syntax.
+
+```{r county-data}
+
+# Write your get_acs() code here
+my_state<- get_acs(
+  geography = "county",
+  state = "CA",
+  variables = c(mhhinc = "B19013_001", 
+                totpop = "B01003_001"),
+  year = 2022,
+  survey = "acs5",
+  output = "wide"
+)
+
+# Clean the county names to remove state name and "County" 
+# Hint: use mutate() with str_remove()
+my_state <- my_state %>%
+  mutate(
+    county_name = NAME %>%
+      str_remove(", California") %>%
+      str_remove(" County")
+  )
+
+# Display the first few rows
+head(my_state)
+```
+
+## 2.2 Data Quality Assessment
+
+**Your Task:** Calculate margin of error percentages and create reliability categories.
+
+**Requirements:**
+- Calculate MOE percentage: (margin of error / estimate) * 100
+- Create reliability categories:
+  - High Confidence: MOE < 5%
+  - Moderate Confidence: MOE 5-10%  
+  - Low Confidence: MOE > 10%
+- Create a flag for unreliable estimates (MOE > 10%)
+
+**Hint:** Use `mutate()` with `case_when()` for the categories.
+
+```{r income-reliability}
+# Calculate MOE percentage and reliability categories using mutate()
+my_state <- my_state %>%
+  mutate(
+    moe_pct = mhhincM / mhhincE * 100,
+    reliability = case_when(
+      moe_pct < 5  ~ "high",
+      moe_pct <= 10 ~ "mod",
+      moe_pct > 10 ~ "low"))
+  
+
+# Create a summary showing count of counties in each reliability category
+# Hint: use count() and mutate() to add percentages
+```
+
+## 2.3 High Uncertainty Counties
+
+**Your Task:** Identify the 5 counties with the highest MOE percentages.
+
+**Requirements:**
+- Sort by MOE percentage (highest first)
+- Select the top 5 counties
+- Display: county name, median income, margin of error, MOE percentage, reliability category
+- Format as a professional table using `kable()`
+
+**Hint:** Use `arrange()`, `slice()`, and `select()` functions.
+
+```{r high-uncertainty}
+# Create table of top 5 counties by MOE percentage
+
+top5 <- my_state %>%
+  select(county_name, mhhincE, mhhincM, moe_pct, reliability) %>% 
+  arrange(desc(moe_pct)) %>%
+  slice_head(n = 5)
+
+# Format as table with kable() - include appropriate column names and caption
+top5 %>%
+  select(county_name, mhhincE, mhhincM, moe_pct, reliability) %>%
+  kable(
+    col.names = c("County", "Median Income", "Margin of Error", 
+                  "Margin of Error Percentage", "Reliability"),
+    caption = "California Counties: Median Household Income with Statistical Uncertainty",
+    format.args = list(big.mark = ",")
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  footnote(
+    general = c("Variance in percentage indicates reliability:",
+                "🟢 High reliability (Pct < 5%)",
+                "🟡 Moderate reliability (Pct 5-10%)", 
+                "🔴 Low reliability (Pct > 10%)",
+                "Source: American Community Survey 2018-2022 5-Year Estimates"),
+    general_title = "Notes:"
+  )
+```
+
+**Data Quality Commentary:**
+
+[Write 2-3 sentences explaining what these results mean for algorithmic decision-making. Consider: Which counties might be poorly served by algorithms that rely on this income data? What factors might contribute to higher uncertainty?]
+
+# Part 3: Neighborhood-Level Analysis
+
+## 3.1 Focus Area Selection
+
+**Your Task:** Select 2-3 counties from your reliability analysis for detailed tract-level study.
+
+**Strategy:** Choose counties that represent different reliability levels (e.g., 1 high confidence, 1 moderate, 1 low confidence) to compare how data quality varies.
+
+```{r select-counties}
+# Use filter() to select 2-3 counties from your county_reliability data
+# Store the selected counties in a variable called selected_counties
+selected_counties <- my_state %>%
+  filter(county_name %in% c("Yolo", 
+          "Mono", "Tehama"))
+# Display the selected counties with their key characteristics
+glimpse(selected_counties)
+# Show: county name, median income, MOE percentage, reliability category
+```
+
+**Comment on the output:** The range of percentages go from 2.74% to 18.76%.
+
+## 3.2 Tract-Level Demographics
+
+**Your Task:** Get demographic data for census tracts in your selected counties.
+
+**Requirements:**
+- Geography: tract level
+- Variables: white alone (B03002_003), Black/African American (B03002_004), Hispanic/Latino (B03002_012), total population (B03002_001)
+- Use the same state and year as before
+- Output format: wide
+- **Challenge:** You'll need county codes, not names. Look at the GEOID patterns in your county data for hints.
+
+```{r tract-demographics}
+# Define your race/ethnicity variables with descriptive names
+# Use get_acs() to retrieve tract-level data
+# Hint: You may need to specify county codes in the county parameter
+
+tract <- get_acs(
+  geography = "tract",
+  variables = c(white = "B03002_003", 
+                black = "B03002_004", 
+                hisp = "B03002_012",
+                totpop = "B03002_001"
+                  ),
+  state = "CA",
+  county = c("Yolo", "Mono", "Tehama"),
+  year = 2022, 
+  survery = "acs5",
+  output = "wide")
+  
+
+
+
+
+# Calculate percentage of each group using mutate()
+# Create percentages for white, Black, and Hispanic populations
+tract <- tract %>%
+  mutate(whitep = whiteE/totpopE * 100,
+          blackp = blackE/totpopE * 100,
+          hispp = hispE/totpopE * 100)
+
+
+# Add readable tract and county name columns using str_extract() or similar
+
+tract <- tract %>%
+  mutate(county_name = 
+      str_extract(NAME, "Mono|Yolo|Tehama"))
+```
+
+## 3.3 Demographic Analysis
+
+**Your Task:** Analyze the demographic patterns in your selected areas.
+
+```{r demographic-analysis}
+# Find the tract with the highest percentage of Hispanic/Latino residents
+# Hint: use arrange() and slice() to get the top tract
+hisptract <- tract %>%
+  arrange(desc(hispp)) %>%
+  slice_head(n = 1)
+
+# Calculate average demographics by county using group_by() and summarize()
+avg_demo <- tract %>%
+  group_by(county_name) %>%
+  summarize(avg_white = mean(whitep, na.rm = TRUE),
+            avg_black = mean(blackp, na.rm = TRUE),
+            avg_hisp = mean(hispp, na.rm = TRUE))
+# Show: number of tracts, average percentage for each racial/ethnic group
+tract_demo <- tract %>%
+  group_by(county_name) %>%
+  summarize(avg_white = mean(whitep, na.rm = TRUE),
+            avg_black = mean(blackp, na.rm = TRUE),
+            avg_hisp = mean(hispp, na.rm = TRUE),
+            tracts = n())
+ 
+
+
+# Create a nicely formatted table of your results using kable()
+
+tract_demo %>%
+  select(county_name, avg_white, avg_black, avg_hisp) %>%
+  kable(
+    col.names = c("County", "Avg White", "Avg Black", 
+                  "Avg Hispanic"),
+    caption = "Deomographic Analysis in California Counties; Yolo, Temaha, and Mono",
+    format.args = list(big.mark = ",")
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  footnote(
+    general = c(
+                "Source: American Community Survey 2018-2022 5-Year Estimates"),
+    general_title = "Notes:"
+  )
+
+```
+
+# Part 4: Comprehensive Data Quality Evaluation
+
+## 4.1 MOE Analysis for Demographic Variables
+
+**Your Task:** Examine margins of error for demographic variables to see if some communities have less reliable data.
+
+**Requirements:**
+- Calculate MOE percentages for each demographic variable
+- Flag tracts where any demographic variable has MOE > 15%
+- Create summary statistics
+
+```{r demographic-moe}
+# Calculate MOE percentages for white, Black, and Hispanic variables
+# Hint: use the same formula as before (margin/estimate * 100)
+# Create a flag for tracts with high MOE on any demographic variable
+# Use logical operators (| for OR) in an ifelse() statement
+tract_moe <- tract %>%
+  mutate(
+    black_moe = blackM / blackE * 100,
+    white_moe = whiteM/whiteE * 100,
+    hisp_moe = hispM/hispE * 100,
+    across(c(black_moe, white_moe, hisp_moe),
+      ~ if_else(. < 15, "high", "low"),
+      .names = "{.col}_reliability"   # optional: create new columns
+    ))
+  
+    
+# Create summary statistics showing how many tracts have data quality issues
+tract_moe_graph <- tract_moe %>%
+  group_by(white_moe_reliability) %>%
+  summarize(tract = n())
+
+tract_moe_graph %>%
+  select(white_moe_reliability, tract) %>%
+  kable(
+    col.names = c("Reliability", "Tract"),
+    caption = "White Population Variance Reliability Tract Count in California Counties; Yolo, Temaha, and Mono",
+    format.args = list(big.mark = ",")
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  footnote(
+    general = c(
+                "Source: American Community Survey 2018-2022 5-Year Estimates"),
+    general_title = "Notes:"
+  )
+
+
+```
+
+## 4.2 Pattern Analysis
+
+**Your Task:** Investigate whether data quality problems are randomly distributed or concentrated in certain types of communities.
+
+```{r pattern-analysis}
+# Group tracts by whether they have high MOE issues
+# Use group_by() and summarize() to create this comparison
+# Create a professional table showing the patterns
+
+pattern <- tract_moe %>%
+  pivot_longer(
+    cols = c(white_moe_reliability, black_moe_reliability, hisp_moe_reliability), 
+    names_to = "variable",        # new column to store old column names
+    values_to = "reliability"           # new column to store values
+  ) %>%
+  group_by(variable, reliability) %>%
+  summarise(tracts = n(),
+            avg_total_pop = mean(totpopE, na.rm = TRUE),
+            avg_black = mean(blackE, na.rm = TRUE),
+            avg_white = mean(whiteE, na.rm = TRUE),
+            avg_hisp = mean(hispE, na.rm = TRUE),
+            .groups = "drop")
+
+pattern %>%
+  select(variable, reliability, tracts, avg_total_pop, avg_black, avg_white, avg_hisp) %>%
+  kable(
+    col.names = c("Race", "Reliability", "Tract", "Avg Total Pop", "Avg Black", "Avg White", "Avg Hisp"),
+    caption = "Population Variance Reliability Tract Count in California Counties; Yolo, Temaha, and Mono",
+    format.args = list(big.mark = ",")
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  footnote(
+    general = c(
+                "Source: American Community Survey 2018-2022 5-Year Estimates"),
+    general_title = "Notes:"
+  )
+
+
+```
+
+**Pattern Analysis:** [Describe any patterns you observe. Do certain types of communities have less reliable data? What might explain this?]
+
+
+# Part 5: Policy Recommendations
+
+## 5.1 Analysis Integration and Professional Summary
+
+**Your Task:** Write an executive summary that integrates findings from all four analyses.
+
+**Executive Summary Requirements:**
+1. **Overall Pattern Identification**: What are the systematic patterns across all your analyses?
+
+In the first table, the top five counties have low reliabilities, with margin of error percentages ranging from 11.45% to 18.76%. While Alpine and Mono appear wealthier and Trinity appears poorer, the overlapping uncertainty ranges mean we cannot definitively rank them. Looking at the three selected counties, Mono and Tehama have an overwhelmingly White majority, with Hispanic populations as the second largest group. Yolo County also has a White majority, but the Hispanic population constitutes a larger share relative to Mono and Tehama. Yolo County has less than 3% Black residents, while Tehama and Mono have less than 1%. These numbers are based on the estimates; however, examining the margins of error reveals that many census tracts within these counties have data quality issues. Additionally, the number of census tracts varies widely across the counties: Mono has 4, Tehama has 14, and Yolo has 53, reflecting a large range of tract sizes within each county.
+
+2. **Equity Assessment**: Which communities face the greatest risk of algorithmic bias based on your findings?
+
+The communities most affected by algorithmic bias are the Black and Hispanic populations. Black residents face high uncertainty in population counts, as all 71 census tracts across the three counties have data quality issues. The Hispanic population is similarly at risk, with 70 of the 71 tracts classified as low reliability, meaning their population counts are also uncertain. The White population is somewhat less affected, with 62 of the 71 tracts showing data quality issues; however, compared to the other racial groups, they face relatively lower risk.
+
+3. **Root Cause Analysis**: What underlying factors drive both data quality issues and bias risk?
+
+Underlying factors that may drive both data quality issues and bias risk include the size of the census tracts, which can make it more difficult to accurately count populations. Tehama and Mono counties are considered rural, which may contribute to this inaccuracy. Many rural areas are underserved, receive less federal funding, and are more susceptible to data quality issues. Mono and Tehama counties also have higher margin of error percentages for median household income—18.76% and 6.95%, respectively. In contrast, Yolo County, which is not rural, has a margin of error of less than 3%, highlighting disparities in data accuracy depending on geographic location.
+
+4. **Strategic Recommendations**: What should the Department implement to address these systematic issues?
+
+To address systematic data quality issues and bias risk, the Department of Human Services should prioritize improving data collection in rural counties by increasing resources, and targeting hard-to-reach tracts. Data quality monitoring should include regular audits and flagging high-margin-of-error areas to guide supplemental efforts. Algorithmic and policy decisions should incorporate measures of uncertainty to prevent disproportionate impacts on Black, Hispanic, and other marginalized populations. Integrating multiple data sources and using technology to identify gaps can further improve accuracy, while targeted support and community engagement ensure that interventions reach the populations most affected by unreliable data.
+
+**Executive Summary:**
+
+[Your integrated 4-paragraph summary here]
+
+## 6.3 Specific Recommendations
+
+**Your Task:** Create a decision framework for algorithm implementation.
+
+```{r recommendations-data}
+# Create a summary table using your county reliability data
+# Include: county name, median income, MOE percentage, reliability category
+my_state %>%
+  mutate(
+    algorithm_recommendation = case_when(
+      reliability == "high"   ~ "Safe for algorithmic decisions",
+      reliability == "mod"    ~ "Use with caution - monitor outcomes",
+      reliability == "low"    ~ "Requires manual review or additional data",
+      TRUE                     ~ NA_character_  # catch any unexpected values
+    )
+  ) %>%
+  select(county_name, mhhincE, mhhincM, moe_pct, reliability, algorithm_recommendation) %>%
+  kable(
+    col.names = c("County", "Median Income", "Margin of Error", 
+                  "Margin of Error Percentage", "Reliability", "Algorithm Recommendation"),
+    caption = "California Counties: Median Household Income with Statistical Uncertainty",
+    format.args = list(big.mark = ",")
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  footnote(
+    general = c("Variance in percentage indicates reliability:",
+                "🟢 High reliability (Pct < 5%)",
+                "🟡 Moderate reliability (Pct 5-10%)", 
+                "🔴 Low reliability (Pct > 10%)",
+                "Source: American Community Survey 2018-2022 5-Year Estimates"),
+    general_title = "Notes:"
+  )
+
+# Format as a professional table with kable()
+```
+
+**Key Recommendations:**
+
+**Your Task:** Use your analysis results to provide specific guidance to the department.
+
+1. **Counties suitable for immediate algorithmic implementation:** 
+
+Alameda, Butte, Calaveras, Contra Costa, El Dorado, Fresno, Humboldt, Imperial, Kern, Kings, Lake, Los Angeles, Madera, Marin, Mendocino, Merced, Monterey, Napa, Nevada, Orange, Placer, Riverside, Sacramento, San Bernardino, San Diego, San Francisco, San Joaquin, San Luis Obispo, San Mateo, Santa Barbara, Santa Clara, Santa Cruz, Shasta, Siskiyou, Solano, Sonoma, Stanislaus, Sutter, Tulare, Ventura, Yolo, and Yuba. These counties are considered to have high confidence data and are suitable for immediate algorithmic implementation because they have a margin of error percentage less than 5%. 
+
+2. **Counties requiring additional oversight:** 
+Amador, Colusa, Del Norte, Glenn, Inyo, Lassen, Mariposa, Modoc, San Benito, Tehama, and Tuolumne. Theses counties are considered to have moderate confidence data and require additional oversight because they have a margin of error percentage between 5% and 10%.
+
+3. **Counties needing alternative approaches:** 
+
+Alpine, Mono, Plumas, Sierra, and Trinity. These counties are considered to have low confidence data and require alternative approaches to analysis because they have a margin of error percentage over 10%.
+
+## Questions for Further Investigation
+
+1.What is the population density of these areas, and how concentrated are the tracts and counties?
+
+2.What are the poverty levels in these areas, and how do the margins of error affect our understanding of economic disparities?
+
+
+# Technical Notes
+
+**Data Sources:** 
+- U.S. Census Bureau, American Community Survey 2018-2022 5-Year Estimates
+- Retrieved via tidycensus R package on [2/06/2026]
+
+**Reproducibility:** 
+- All analysis conducted in R version 4.5.1
+- Census API key required for replication
+- Complete code and documentation available at: [your portfolio URL]
+
+**Methodology Notes:**
+The counties I selected were chosen randomly, aside from the guideline to include examples with low, moderate, and high uncertainty statistics. The racial groups I focused on could have been more comprehensive.
+
+**Limitations:**
+California is a large state with many metropolitan areas. In my analysis, I did not include counties or census tracts that encompass major metropolitan regions. In fact, two of the three counties analyzed were rural, which significantly influences the outcomes of the analysis.
+
+---
+
+## Submission Checklist
+
+Before submitting your portfolio link on Canvas:
+
+- [ ] All code chunks run without errors
+- [ ] All "[Fill this in]" prompts have been completed
+- [ ] Tables are properly formatted and readable
+- [ ] Executive summary addresses all four required components
+- [ ] Portfolio navigation includes this assignment
+- [ ] Census API key is properly set 
+- [ ] Document renders correctly to HTML
+
+**Remember:** Submit your portfolio URL on Canvas, not the file itself. Your assignment should be accessible at `your-portfolio-url/labs/lab_1/your_file_name.html`
