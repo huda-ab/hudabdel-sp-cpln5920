@@ -12,7 +12,7 @@ website:
         menu:
           - href: labs/lab_0/index.qmd
             text: "Lab 0: dplyr Basics"
-          - href: labs/lab_1/index.qmd
+          - href: labs/lab_1/lab_1.qmd
             text: "Lab 1: Census Data Quality for Policy Decisions"
  
 format:
