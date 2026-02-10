@@ -142,7 +142,6 @@ select(car_data, Model, year, age, Mileage, mileage_per_year)
 ## 3.2 Categorize Cars
 
 ```{r categorize-cars}
-# Create a price_category column where if price is < 15000, its is coded as budget, between 15000 and 30000 is midrange and greater than 30000 is mid-range (use case_when)
 
 car_data <- car_data %>%
   mutate(price_category = case_when(
