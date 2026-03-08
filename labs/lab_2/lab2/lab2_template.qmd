@@ -261,7 +261,7 @@ dist_hospital_filtered <- dist_hospital %>%
 - What percentage of vulnerable tracts are underserved?
 2.3%
 - Does this surprise you? Why or why not?
-This does surprise me because it is interesting how another metric can drastically change the outcomes of a variable. We here vulnerable and underserved terms being used interchangeably but when additional metrics are included it can deepen your analysis. 
+This does surprise me because it is interesting how another metric can drastically change the outcomes of a variable. We hear vulnerable and underserved terms being used interchangeably but when additional metrics are included it can deepen your analysis. 
 
 ---
 
@@ -494,7 +494,6 @@ Choose ONE of the following challenge exercises, or propose your own research qu
 schools <- st_read("C:/Users/hudaa/Downloads/Schools/Schools.shp")
 street <- st_read("C:/Users/hudaa/Downloads/high_injury_network_2025/high_injury_network_2025.shp")
 crossing <- st_read("C:/Users/hudaa/Downloads/School_Crossing_Guards/School_Crossing_Guards.shp")
-
 ```
 
 **Questions to answer:**
