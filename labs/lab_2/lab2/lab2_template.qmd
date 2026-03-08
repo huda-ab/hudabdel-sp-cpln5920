@@ -489,7 +489,7 @@ Choose ONE of the following challenge exercises, or propose your own research qu
    - Check and standardize the CRS
    - Provide basic summary statistics
 
-```{r message = FALSE, warning = FALSE}
+```{r message = FALSE, warning = FALSE, results = 'hide'}
 # Load your additional dataset
 schools <- st_read("C:/Users/hudaa/Downloads/Schools/Schools.shp")
 street <- st_read("C:/Users/hudaa/Downloads/high_injury_network_2025/high_injury_network_2025.shp")
