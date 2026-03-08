@@ -211,7 +211,7 @@ print("Common Census Variables:")
 common_variables
 ```
 
-**Key Tips for Variable Hunting:**
+**Key Tips for Variable Hunting:**  
 
 1.  **Start with concepts** - search for the topic you want (income,
     age, housing)
