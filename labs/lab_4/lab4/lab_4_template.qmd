@@ -677,6 +677,58 @@ comparison %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
+```{r prediction-errors}
+#| fig-width: 10
+#| fig-height: 5
+
+# Calculate errors
+fishnet <- fishnet %>%
+  mutate(
+    error_nb = countBurglaries - prediction_nb,
+    error_kde = countBurglaries - prediction_kde,
+    abs_error_nb = abs(error_nb),
+    abs_error_kde = abs(error_kde)
+  )
+
+# Map errors
+p1 <- ggplot() +
+  geom_sf(data = fishnet, aes(fill = error_nb), color = NA) +
+  scale_fill_gradient2(
+    name = "Error",
+    low = "#2166ac", mid = "white", high = "#b2182b",
+    midpoint = 0,
+    limits = c(-10, 10)
+  ) +
+  labs(title = "Model Errors NB") +
+  theme_crime()
+
+p2 <- ggplot() +
+  geom_sf(data = fishnet, aes(fill = abs_error_nb), color = NA) +
+  scale_fill_viridis_c(name = "Abs. Error", option = "plasma") +
+  labs(title = "Absolute Model Errors NB") +
+  theme_crime()
+
+p3 <- ggplot() +
+  geom_sf(data = fishnet, aes(fill = error_kde), color = NA) +
+  scale_fill_gradient2(
+    name = "Error",
+    low = "#2166ac", mid = "white", high = "#b2182b",
+    midpoint = 0,
+    limits = c(-10, 10)
+  ) +
+  labs(title = "Model Errors KDE") +
+  theme_crime()
+
+p4 <- ggplot() +
+  geom_sf(data = fishnet, aes(fill = abs_error_kde), color = NA) +
+  scale_fill_viridis_c(name = "Abs. Error", option = "plasma") +
+  labs(title = "Absolute Model Errors KDE") +
+  theme_crime()
+
+p1 + p2 + p3 + p4
+```
+
+
 ## Negative Binomial Model Table
 
 ```{r model-summary-table}
@@ -752,7 +804,7 @@ However, while KDE provides stronger predictive accuracy, it does not offer insi
 
 This highlights an important tradeoff between predictive performance and interpretability: simpler spatial models may outperform in prediction, but the negative binomial provides coefficients for each variable allowing us to understand the magnitude of each variable's ability to predict the outcome, illustrating a more comprehensive picture of the variance within the dataset.
 
-According to the maps, the negative binomial model performs poorly for areas along the perimeter of Chicago, more specifically the Southern edge. It performs well in the central areas of Chicago. The KDE map generally overall performs well throughout the city.   
+According to the maps, both models overpredict and underpreidct throughout the city. The negative binomial model overpredicts and underpredicts more than the KDE baseline. Additionally it performs poorly for areas along the southeastern parts of Chicago, the KDE baseline performs poorly for that area as well. There is a small pocket in the northern part of Chicago that the NB model does not accurately predict, this is also evident for the KDE baseline but not with the same magnitude. Broadly both models do not have large absolute errors, highlighting they both perform relatively well. 
 
 
 
