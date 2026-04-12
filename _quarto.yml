@@ -16,6 +16,8 @@ website:
             text: "Lab 1: Census Data Quality for Policy Decisions"
           - href: labs/lab_2/lab2/lab2_template.qmd
             text: "Lab 2: Spatial Analysis and Visualization"
+          - href: labs/lab_4/lab4/lab_4_template.qmd
+            text: "Lab 4: Spatial Predictive Analysis"
  
 format:
   html:
