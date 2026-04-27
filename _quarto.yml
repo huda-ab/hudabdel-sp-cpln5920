@@ -18,6 +18,8 @@ website:
             text: "Lab 2: Spatial Analysis and Visualization"
           - href: labs/lab_4/lab4/lab_4_template.qmd
             text: "Lab 4: Spatial Predictive Analysis"
+          - href: labs/lab_5/lab5/week11_inclass_and_lab5.qmd
+            text: "Lab 5: Bikeshare SpaceTime Prediction"
  
 format:
   html:
