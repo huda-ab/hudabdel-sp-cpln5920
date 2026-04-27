@@ -1989,7 +1989,7 @@ p2.2 <- ggplot() +
 
 ```
 
-## Temporal Errors 
+## Temporal Errors
 
 ```{r}
 # MAE by time of day and day type
@@ -2164,7 +2164,7 @@ cat("AIC - Poisson:", AIC(poisson4.2), "\n")
 
 ```
 
-## Map Errors 
+## Map Errors
 
 ```{r}
 # Calculate prediction errors for Poisson model
@@ -2245,7 +2245,7 @@ library(patchwork)
 (p1_pois | p2_pois)
 ```
 
-## Analysis 
+## Analysis
 
 MAE is consistently lower in the winter quarter (\~0.53–0.62) compared to spring/early summer (\~0.69–0.84), indicating that the model predicts ridership more accurately during winter. This difference is likely driven by stability in winter travel behavior, ridership is lower but more predictable. In contrast, spring and early summer introduce greater variability due to changing weather, tourism, academic schedules, and irregular travel patterns (e.g., vacations, events), which increases prediction error. Despite this, the temporal structure remains consistent across seasons: clear peaks during commute hours and lower usage in the evening. This suggests that while the level of demand changes seasonally, the underlying behavioral patterns of ridership are stable, and temporal features are capturing that well across both models, which is why they both experience the most improvements with temp lags in the model.
 
